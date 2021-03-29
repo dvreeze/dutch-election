@@ -1,5 +1,5 @@
 ===================
-Dutch-election-2020
+Dutch-election-2021
 ===================
 
 This Scala project converts Dutch 2021 "Tweede Kamer" election results in XML format to spreadsheet format.
