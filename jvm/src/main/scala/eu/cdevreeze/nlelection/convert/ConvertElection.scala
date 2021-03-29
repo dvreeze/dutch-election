@@ -63,15 +63,15 @@ object ConvertElection {
       selection <- votes.selections
     } yield {
       val kindOfSelection: String = selection match {
-        case Selection.OfCandidate(_, _) => "C"
-        case _                           => "A"
+        case Selection.OfCandidate(_, _) => "Cnd"
+        case _                           => "Aff"
       }
 
       Seq[String](
         electionId.key,
         contest.contestId.id,
         contest.contestId.contestName,
-        if (votes.reportingUnitIdOption.isEmpty) "T" else "R",
+        if (votes.reportingUnitIdOption.isEmpty) "Tot" else "Rep",
         votes.reportingUnitIdOption.map(_.id).getOrElse(""),
         kindOfSelection,
         selection.affiliationId.id,
