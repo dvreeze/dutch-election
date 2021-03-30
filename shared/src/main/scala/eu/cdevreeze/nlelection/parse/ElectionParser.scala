@@ -18,6 +18,7 @@ package eu.cdevreeze.nlelection.parse
 
 import scala.annotation.tailrec
 import scala.collection.immutable.SeqMap
+import scala.util.chaining._
 
 import eu.cdevreeze.nlelection.common.ENames
 import eu.cdevreeze.nlelection.data.AffiliationId
@@ -69,7 +70,7 @@ object ElectionParser {
   def parseContestId(elem: BackingNodes.Elem): ContestId = {
     require(elem.name == EmlContestIdentifierEName, s"Expected $EmlContestIdentifierEName but got ${elem.name}")
 
-    ContestId(elem.attr(IdEName), elem.findChildElem(_.name == EmlContestNameEName).get.text)
+    ContestId(elem.attr(IdEName), elem.findChildElem(_.name == EmlContestNameEName).map(_.text).getOrElse(""))
   }
 
   def parseVotes(elem: BackingNodes.Elem): Votes = {
@@ -119,7 +120,9 @@ object ElectionParser {
   def parseCandidateKey(elem: BackingNodes.Elem, contextAffiliationId: AffiliationId): CandidateKey = {
     require(elem.name == EmlCandidateEName, s"Expected $EmlCandidateEName but got ${elem.name}")
 
-    CandidateKey(contextAffiliationId, elem.findChildElem(_.name == EmlCandidateIdentifierEName).get.attr(IdEName))
+    def getIdOrShortCode(e: BackingNodes.Elem): String = e.attrOption(IdEName).orElse(e.attrOption(ShortCodeEName)).getOrElse("")
+
+    CandidateKey(contextAffiliationId, elem.findChildElem(_.name == EmlCandidateIdentifierEName).get.pipe(getIdOrShortCode))
   }
 
   def parseAffiliationId(elem: BackingNodes.Elem): AffiliationId = {

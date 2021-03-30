@@ -36,6 +36,7 @@ object ENames {
   val ReasonCodeEName: EName = EName.fromLocalName("ReasonCode")
   val RegionCategoryEName: EName = EName.fromLocalName("RegionCategory")
   val RegionNumberEName: EName = EName.fromLocalName("RegionNumber")
+  val ShortCodeEName: EName = EName.fromLocalName("ShortCode")
   val SuperiorRegionCategoryEName: EName = EName.fromLocalName("SuperiorRegionCategory")
   val SuperiorRegionNumberEName: EName = EName.fromLocalName("SuperiorRegionNumber")
 

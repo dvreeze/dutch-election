@@ -38,6 +38,10 @@ object ConvertElection {
 
   private val saxonProcessor: Processor = new Processor(false)
 
+  def parseNestedElection(elem: SaxonNodes.Elem): Election = {
+    parseElection(elem.findDescendantElemOrSelf(_.name == ENames.EmlElectionEName).get)
+  }
+
   def parseElection(elem: SaxonNodes.Elem): Election = {
     ElectionParser.parse(elem)
   }
@@ -92,7 +96,7 @@ object ConvertElection {
 
       val doc: SaxonDocument = SaxonDocument(saxonProcessor.newDocumentBuilder().build(inputFile))
 
-      val election: Election = parseElection(doc.documentElement.findDescendantElemOrSelf(_.name == ENames.EmlElectionEName).get)
+      val election: Election = parseNestedElection(doc.documentElement)
 
       require(election.contests.forall(_.isConsistentRegardingValidVotes), s"Inconsistencies found in totals of valid vote counts")
 
