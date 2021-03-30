@@ -26,6 +26,7 @@ import com.github.tototoshi.csv.CSVWriter
 import eu.cdevreeze.nlelection.common.ENames
 import eu.cdevreeze.nlelection.data.Election
 import eu.cdevreeze.nlelection.data.ElectionDefinition
+import eu.cdevreeze.yaidom2.core.EName
 import eu.cdevreeze.yaidom2.node.saxon.SaxonDocument
 import net.sf.saxon.s9api.Processor
 
@@ -91,7 +92,9 @@ object ConvertAll {
 
     println(s"Analyzing file '$inputFile' (size: ${inputFile.length}; element count: $elementCount)")
 
-    if (saxonDoc.documentElement.findDescendantElemOrSelf(_.name == ENames.EmlElectionEName).nonEmpty) {
+    val votesENames: Set[EName] = Set(ENames.EmlTotalVotesEName, ENames.EmlReportingUnitVotesEName)
+
+    if (saxonDoc.documentElement.findDescendantElemOrSelf(e => votesENames.contains(e.name)).nonEmpty) {
       // scalastyle:off
       println(s"Converting election file '$inputFile' to CSV file '$outputFile' ...")
 
