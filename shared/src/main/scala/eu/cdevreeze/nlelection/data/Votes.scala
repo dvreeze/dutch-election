@@ -29,7 +29,7 @@ sealed trait Votes {
 
   def reportingUnitIdOption: Option[ReportingUnitId]
 
-  def selections: Seq[Selection]
+  def selectionsByAffiliationId: Map[AffiliationId, Seq[Selection]]
 
   def votesCast: Long
 
@@ -39,41 +39,82 @@ sealed trait Votes {
 
   def uncountedVotes: SeqMap[ReasonCode, Long]
 
-  final def selectionsGroupedByAffiliationId: Map[AffiliationId, Seq[Selection]] = selections.groupBy(_.affiliationId)
+  final def selections: Seq[Selection] = {
+    selectionsByAffiliationId.values.flatten.toSeq.sortBy(_.sortKey)
+  }
+
+  final def filterSelectionsByAffiliationId(affiliationId: AffiliationId): Seq[Selection] = {
+    selectionsByAffiliationId.getOrElse(affiliationId, Seq.empty)
+  }
+
+  final def filterNonCandidateSelectionsByAffiliationId(affiliationId: AffiliationId): Seq[Selection] = {
+    filterSelectionsByAffiliationId(affiliationId).filter(_.candidateKeyOption.isEmpty)
+  }
 
   final def isConsistentRegardingValidVotes(affiliationId: AffiliationId): Boolean = {
-    val selectionsForAffiliation: Seq[Selection] = selections.filter(_.affiliationId == affiliationId)
+    val selectionsForAffiliation: Seq[Selection] = filterSelectionsByAffiliationId(affiliationId)
 
     selectionsForAffiliation.filter(_.candidateKeyOption.nonEmpty).map(_.validVotes).sum ==
       selectionsForAffiliation.filter(_.candidateKeyOption.isEmpty).map(_.validVotes).sum
   }
 
   final def isConsistentRegardingValidVotes: Boolean = {
-    selectionsGroupedByAffiliationId.keySet.forall(affId => isConsistentRegardingValidVotes(affId))
+    selectionsByAffiliationId.keySet.forall(affId => isConsistentRegardingValidVotes(affId))
   }
 }
 
 final case class TotalVotes(
-    selections: Seq[Selection],
+    selectionsByAffiliationId: Map[AffiliationId, Seq[Selection]],
     votesCast: Long,
     totalCounted: Long,
     rejectedVotes: SeqMap[ReasonCode, Long],
     uncountedVotes: SeqMap[ReasonCode, Long])
     extends Votes {
+
+  require(selectionsByAffiliationId.forall { case (affId, selections) => selections.forall(_.affiliationId == affId) })
 
   def reportingUnitIdOption: Option[ReportingUnitId] = None
 }
 
+object TotalVotes {
+
+  def apply(
+      selections: Seq[Selection],
+      votesCast: Long,
+      totalCounted: Long,
+      rejectedVotes: SeqMap[ReasonCode, Long],
+      uncountedVotes: SeqMap[ReasonCode, Long]): TotalVotes = {
+
+    apply(selections.groupBy(_.affiliationId), votesCast, totalCounted, rejectedVotes, uncountedVotes)
+  }
+}
+
 final case class ReportingUnitVotes(
     reportingUnitId: ReportingUnitId,
-    selections: Seq[Selection],
+    selectionsByAffiliationId: Map[AffiliationId, Seq[Selection]],
     votesCast: Long,
     totalCounted: Long,
     rejectedVotes: SeqMap[ReasonCode, Long],
     uncountedVotes: SeqMap[ReasonCode, Long])
     extends Votes {
 
+  require(selectionsByAffiliationId.forall { case (affId, selections) => selections.forall(_.affiliationId == affId) })
+
   def reportingUnitIdOption: Option[ReportingUnitId] = Some(reportingUnitId)
+}
+
+object ReportingUnitVotes {
+
+  def apply(
+      reportingUnitId: ReportingUnitId,
+      selections: Seq[Selection],
+      votesCast: Long,
+      totalCounted: Long,
+      rejectedVotes: SeqMap[ReasonCode, Long],
+      uncountedVotes: SeqMap[ReasonCode, Long]): ReportingUnitVotes = {
+
+    apply(reportingUnitId, selections.groupBy(_.affiliationId), votesCast, totalCounted, rejectedVotes, uncountedVotes)
+  }
 }
 
 object Votes {

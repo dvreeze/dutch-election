@@ -28,6 +28,10 @@ sealed trait Selection {
   def candidateKeyOption: Option[CandidateKey]
 
   def validVotes: Long
+
+  def sortKey: (Long, Long) = {
+    (affiliationId.id.toLongOption.getOrElse(0L), candidateKeyOption.flatMap(_.candidateId.toLongOption).getOrElse(0L))
+  }
 }
 
 object Selection {

@@ -39,26 +39,25 @@ final case class Contest private (
 
   def votesSeq: Seq[Votes] = reportingUnitVotesMap.values.toSeq.prepended(totalVotes)
 
-  // Inefficient computations, but that's not a problem until it's a problem
+  def isConsistentRegardingValidVotesAcrossUnits(affiliationId: AffiliationId): Boolean = {
+    val totalVotesForAffiliation: Long = totalVotes.filterNonCandidateSelectionsByAffiliationId(affiliationId).map(_.validVotes).sum
 
-  def isConsistentRegardingValidAffiliationVotes(affiliationId: AffiliationId): Boolean = {
-    val validVotesPerOptReportingUnit: Map[Option[ReportingUnitId], Long] =
-      votesMap.view
-        .mapValues(_.selections.filter(sel => sel.candidateKeyOption.isEmpty && sel.affiliationId == affiliationId).map(_.validVotes).sum)
-        .toMap
+    val reportingUnitVotesForAffiliation: Long =
+      reportingUnitVotesMap.values.flatMap(_.filterNonCandidateSelectionsByAffiliationId(affiliationId)).map(_.validVotes).sum
 
-    validVotesPerOptReportingUnit.getOrElse(None, 0L) ==
-      validVotesPerOptReportingUnit.filterNot(_._1.isEmpty).values.sum
+    totalVotesForAffiliation == reportingUnitVotesForAffiliation
   }
 
-  def isConsistentRegardingValidAffiliationVotes: Boolean = {
-    val affiliationIds: Set[AffiliationId] = votesSeq.flatMap(_.selections).map(_.affiliationId).toSet
+  def isConsistentRegardingValidVotesAcrossUnits: Boolean = {
+    val affiliationIds: Set[AffiliationId] = totalVotes.selectionsByAffiliationId.keySet.toSeq
+      .appendedAll(reportingUnitVotesMap.values.flatMap(_.selectionsByAffiliationId.keySet.toSeq))
+      .toSet
 
-    affiliationIds.forall(affId => isConsistentRegardingValidAffiliationVotes(affId))
+    affiliationIds.forall(affId => isConsistentRegardingValidVotesAcrossUnits(affId))
   }
 
   def isConsistentRegardingValidVotes: Boolean = {
-    votesSeq.forall(_.isConsistentRegardingValidVotes) && isConsistentRegardingValidAffiliationVotes
+    votesSeq.forall(_.isConsistentRegardingValidVotes) && isConsistentRegardingValidVotesAcrossUnits
   }
 }
 
