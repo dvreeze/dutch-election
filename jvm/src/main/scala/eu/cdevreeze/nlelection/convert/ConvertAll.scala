@@ -104,7 +104,7 @@ object ConvertAll {
       convertElectionDefinitionFile(saxonDoc, outputFile)
     } else {
       // scalastyle:off
-      println(s"Currenlty unsupported file '$inputFile'")
+      println(s"Currently unsupported file '$inputFile'")
     }
   }
 
