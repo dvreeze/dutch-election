@@ -17,7 +17,7 @@
 package eu.cdevreeze.nlelection.data
 
 /**
- * Region, as a node in an election tree.
+ * Region, as a node in an election tree. It is a www.kiesraad.nl extension, as kr:Region child element of a kr:ElectionTree element.
  *
  * @author Chris de Vreeze
  */

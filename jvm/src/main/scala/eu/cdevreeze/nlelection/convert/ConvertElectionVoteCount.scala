@@ -22,31 +22,31 @@ import scala.util.Using
 
 import com.github.tototoshi.csv.CSVWriter
 import eu.cdevreeze.nlelection.common.ENames
-import eu.cdevreeze.nlelection.data.Election
-import eu.cdevreeze.nlelection.data.Selection
-import eu.cdevreeze.nlelection.parse.ElectionParser
+import eu.cdevreeze.nlelection.data.ElectionVoteCount
+import eu.cdevreeze.nlelection.data.VotesSelection
+import eu.cdevreeze.nlelection.parse.ElectionVoteCountParser
 import eu.cdevreeze.yaidom2.node.saxon.SaxonDocument
 import eu.cdevreeze.yaidom2.node.saxon.SaxonNodes
 import net.sf.saxon.s9api.Processor
 
 /**
- * Converter of election data in EML XML to CSV.
+ * Converter of election vote count data in EML XML to CSV.
  *
  * @author Chris de Vreeze
  */
-object ConvertElection {
+object ConvertElectionVoteCount {
 
   private val saxonProcessor: Processor = new Processor(false)
 
-  def parseNestedElection(elem: SaxonNodes.Elem): Election = {
-    parseElection(elem.findDescendantElemOrSelf(_.name == ENames.EmlElectionEName).get)
+  def parseNestedElectionVoteCount(elem: SaxonNodes.Elem): ElectionVoteCount = {
+    parseElectionVoteCount(elem.findDescendantElemOrSelf(_.name == ENames.EmlElectionEName).get)
   }
 
-  def parseElection(elem: SaxonNodes.Elem): Election = {
-    ElectionParser.parse(elem)
+  def parseElectionVoteCount(elem: SaxonNodes.Elem): ElectionVoteCount = {
+    ElectionVoteCountParser.parse(elem)
   }
 
-  def convertElectionToCsvWithHeader(election: Election): Seq[Seq[String]] = {
+  def convertElectionToCsvWithHeader(election: ElectionVoteCount): Seq[Seq[String]] = {
     val header =
       Seq(
         "ElectionKey",
@@ -67,14 +67,14 @@ object ConvertElection {
       selection <- votes.selections
     } yield {
       val kindOfSelection: String = selection match {
-        case Selection.OfCandidate(_, _) => "Cnd"
-        case _                           => "Aff"
+        case VotesSelection.OfCandidate(_, _) => "Cnd"
+        case _                                => "Aff"
       }
 
       Seq[String](
         electionId.key,
         contest.contestId.id,
-        contest.contestId.contestName,
+        contest.contestId.contestNameOption.getOrElse(""),
         if (votes.reportingUnitIdOption.isEmpty) "Tot" else "Rep",
         votes.reportingUnitIdOption.map(_.id).getOrElse(""),
         kindOfSelection,
@@ -96,7 +96,7 @@ object ConvertElection {
 
       val doc: SaxonDocument = SaxonDocument(saxonProcessor.newDocumentBuilder().build(inputFile))
 
-      val election: Election = parseNestedElection(doc.documentElement)
+      val election: ElectionVoteCount = parseNestedElectionVoteCount(doc.documentElement)
 
       require(election.contests.forall(_.isConsistentRegardingValidVotes), s"Inconsistencies found in totals of valid vote counts")
 

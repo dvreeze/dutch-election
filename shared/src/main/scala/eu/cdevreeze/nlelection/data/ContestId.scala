@@ -17,8 +17,9 @@
 package eu.cdevreeze.nlelection.data
 
 /**
- * Contest ID, holding an ID and contest name.
+ * Contest ID, holding an ID and contest name. It can appear in just about any EML XML document.
+ * It corresponds to an eml:ContestIdentifier element (with potentially an eml:ContestName child).
  *
  * @author Chris de Vreeze
  */
-final case class ContestId(id: String, contestName: String)
+final case class ContestId(id: String, contestNameOption: Option[String])

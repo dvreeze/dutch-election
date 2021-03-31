@@ -17,7 +17,9 @@
 package eu.cdevreeze.nlelection.data
 
 /**
- * Committee, as a committee category and optional committee name.
+ * Committee, as a committee category and optional committee name. It occurs in an election definition EML XML document,
+ * as kr:Committee element within a kr:ElectionTree element (which are www.kiesraad.nl EML extension elements). The
+ * election definition is recognized by the eml:ElectionEvent element directly under the eml:EML root element.
  *
  * @author Chris de Vreeze
  */

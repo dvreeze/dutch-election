@@ -17,7 +17,8 @@
 package eu.cdevreeze.nlelection.data
 
 /**
- * Unique region key, consisting of a category and region number.
+ * Unique region key, consisting of a category and region number. It corresponds to attributes of a kr:Region element
+ * (which is a www.kiesraad.nl extension to EML).
  *
  * @author Chris de Vreeze
  */

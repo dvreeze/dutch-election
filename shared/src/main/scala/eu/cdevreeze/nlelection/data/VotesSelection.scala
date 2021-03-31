@@ -17,11 +17,12 @@
 package eu.cdevreeze.nlelection.data
 
 /**
- * Selection of valid votes of a candidate or an affiliation.
+ * Selection of valid votes of a candidate or an affiliation. It corresponds to an eml:Selection element as it occurs
+ * as child element of an eml:ReportingUnitVotes element or an eml:TotalVotes element, within an eml:Count context.
  *
  * @author Chris de Vreeze
  */
-sealed trait Selection {
+sealed trait VotesSelection {
 
   def affiliationId: AffiliationId
 
@@ -34,16 +35,16 @@ sealed trait Selection {
   }
 }
 
-object Selection {
+object VotesSelection {
 
-  final case class OfCandidate(candidateKey: CandidateKey, validVotes: Long) extends Selection {
+  final case class OfCandidate(candidateKey: CandidateKey, validVotes: Long) extends VotesSelection {
 
     override def affiliationId: AffiliationId = candidateKey.affiliationId
 
     override def candidateKeyOption: Option[CandidateKey] = Some(candidateKey)
   }
 
-  final case class OfAffiliation(affiliationId: AffiliationId, validVotes: Long) extends Selection {
+  final case class OfAffiliation(affiliationId: AffiliationId, validVotes: Long) extends VotesSelection {
 
     override def candidateKeyOption: Option[CandidateKey] = None
   }

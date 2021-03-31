@@ -24,8 +24,8 @@ import scala.util.Using
 
 import com.github.tototoshi.csv.CSVWriter
 import eu.cdevreeze.nlelection.common.ENames
-import eu.cdevreeze.nlelection.data.Election
 import eu.cdevreeze.nlelection.data.ElectionDefinition
+import eu.cdevreeze.nlelection.data.ElectionVoteCount
 import eu.cdevreeze.yaidom2.core.EName
 import eu.cdevreeze.yaidom2.node.saxon.SaxonDocument
 import net.sf.saxon.s9api.Processor
@@ -92,28 +92,26 @@ object ConvertAll {
 
     println(s"Analyzing file '$inputFile' (size: ${inputFile.length}; element count: $elementCount)")
 
-    val votesENames: Set[EName] = Set(ENames.EmlTotalVotesEName, ENames.EmlReportingUnitVotesEName)
-
-    if (saxonDoc.documentElement.findDescendantElemOrSelf(e => votesENames.contains(e.name)).nonEmpty) {
+    if (saxonDoc.documentElement.findDescendantElemOrSelf(_.name == ENames.EmlCountEName).nonEmpty) {
       // scalastyle:off
-      println(s"Converting election file '$inputFile' to CSV file '$outputFile' ...")
+      println(s"Converting election vote count file '$inputFile' to CSV file '$outputFile' ...")
 
-      convertElectionFile(saxonDoc, outputFile)
-    } else if (saxonDoc.documentElement.findDescendantElem(_.name == ENames.KrElectionTreeEName).nonEmpty) {
+      convertElectionVoteCountFile(saxonDoc, outputFile)
+    } else if (saxonDoc.documentElement.findDescendantElemOrSelf(_.name == ENames.EmlElectionEventEName).nonEmpty) {
       // scalastyle:off
       println(s"Converting election definition file '$inputFile' to CSV file '$outputFile' ...")
 
       convertElectionDefinitionFile(saxonDoc, outputFile)
     } else {
       // scalastyle:off
-      println(s"Unsupported file '$inputFile'")
+      println(s"Currenlty unsupported file '$inputFile'")
     }
   }
 
-  def convertElectionFile(inputDoc: SaxonDocument, outputFile: File): Unit = {
-    val election: Election = ConvertElection.parseNestedElection(inputDoc.documentElement)
+  def convertElectionVoteCountFile(inputDoc: SaxonDocument, outputFile: File): Unit = {
+    val election: ElectionVoteCount = ConvertElectionVoteCount.parseNestedElectionVoteCount(inputDoc.documentElement)
 
-    val csvRows: Seq[Seq[String]] = ConvertElection.convertElectionToCsvWithHeader(election)
+    val csvRows: Seq[Seq[String]] = ConvertElectionVoteCount.convertElectionToCsvWithHeader(election)
 
     require(
       election.contests.forall(_.isConsistentRegardingValidVotes),

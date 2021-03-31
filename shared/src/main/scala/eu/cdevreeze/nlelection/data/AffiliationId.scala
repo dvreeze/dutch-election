@@ -17,7 +17,9 @@
 package eu.cdevreeze.nlelection.data
 
 /**
- * Affiliation ID, containing a unique ID plus the registered name.
+ * Affiliation ID, containing a unique ID plus the registered name. It can occur in just about any type of EML XML document.
+ *
+ * It corresponds to an eml:AffiliationIdentifier element in any EML XML context.
  *
  * @author Chris de Vreeze
  */

@@ -23,7 +23,7 @@ import eu.cdevreeze.nlelection.data.ElectionId
 import eu.cdevreeze.yaidom2.queryapi.BackingNodes
 
 /**
- * Parser of election identifiers in EML XML.
+ * Parser of election identifiers (eml:ElectionIdentifier elements) in EML XML.
  *
  * @author Chris de Vreeze
  */

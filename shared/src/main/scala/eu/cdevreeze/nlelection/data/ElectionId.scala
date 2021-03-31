@@ -19,7 +19,8 @@ package eu.cdevreeze.nlelection.data
 import java.time.LocalDate
 
 /**
- * Election identifier, repeated in all files holding election data for the same election.
+ * Election identifier, repeated in all files holding different kinds of election data for the same election.
+ * It corresponds to an eml:ElectionIdentifier element. Some fields (corresponding to child elements) are www.kiesraad.nl extensions.
  *
  * @author Chris de Vreeze
  */

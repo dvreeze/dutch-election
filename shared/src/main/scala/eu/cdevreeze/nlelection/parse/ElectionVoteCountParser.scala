@@ -18,49 +18,48 @@ package eu.cdevreeze.nlelection.parse
 
 import scala.annotation.tailrec
 import scala.collection.immutable.SeqMap
-import scala.util.chaining._
 
 import eu.cdevreeze.nlelection.common.ENames
 import eu.cdevreeze.nlelection.data.AffiliationId
 import eu.cdevreeze.nlelection.data.CandidateKey
-import eu.cdevreeze.nlelection.data.Contest
+import eu.cdevreeze.nlelection.data.ContestVoteCount
 import eu.cdevreeze.nlelection.data.ContestId
-import eu.cdevreeze.nlelection.data.Election
+import eu.cdevreeze.nlelection.data.ElectionVoteCount
 import eu.cdevreeze.nlelection.data.ElectionId
 import eu.cdevreeze.nlelection.data.ReportingUnitId
-import eu.cdevreeze.nlelection.data.ReportingUnitVotes
-import eu.cdevreeze.nlelection.data.Selection
-import eu.cdevreeze.nlelection.data.TotalVotes
-import eu.cdevreeze.nlelection.data.Votes
-import eu.cdevreeze.nlelection.data.Votes.ReasonCode
+import eu.cdevreeze.nlelection.data.ReportingUnitVotesSection
+import eu.cdevreeze.nlelection.data.VotesSelection
+import eu.cdevreeze.nlelection.data.TotalVotesSection
+import eu.cdevreeze.nlelection.data.VotesSection
+import eu.cdevreeze.nlelection.data.VotesSection.ReasonCode
 import eu.cdevreeze.yaidom2.queryapi.BackingNodes
 
 /**
- * Parser of election with its contest(s) in EML XML.
+ * Parser of election vote counts with its contest(s) in EML XML.
  *
  * @author Chris de Vreeze
  */
-object ElectionParser {
+object ElectionVoteCountParser {
 
   import ENames._
 
-  def parse(elem: BackingNodes.Elem): Election = {
+  def parse(elem: BackingNodes.Elem): ElectionVoteCount = {
     require(elem.name == EmlElectionEName, s"Expected $EmlElectionEName but got ${elem.name}")
 
-    val contests: Seq[Contest] =
+    val contests: Seq[ContestVoteCount] =
       elem.filterChildElems(_.name == EmlContestsEName).flatMap(_.filterChildElems(_.name == EmlContestEName)).map(parseContest)
 
-    Election(parseElectionIdentifier(elem.findChildElem(_.name == EmlElectionIdentifierEName).get), contests)
+    ElectionVoteCount(parseElectionIdentifier(elem.findChildElem(_.name == EmlElectionIdentifierEName).get), contests)
   }
 
   def parseElectionIdentifier(elem: BackingNodes.Elem): ElectionId = {
     ElectionIdentifierParser.parseElectionIdentifier(elem)
   }
 
-  def parseContest(elem: BackingNodes.Elem): Contest = {
+  def parseContest(elem: BackingNodes.Elem): ContestVoteCount = {
     require(elem.name == EmlContestEName, s"Expected $EmlContestEName but got ${elem.name}")
 
-    Contest.from(
+    ContestVoteCount.from(
       parseContestId(elem.findChildElem(_.name == EmlContestIdentifierEName).get),
       parseTotalVotes(elem.findChildElem(_.name == EmlTotalVotesEName).get),
       elem.filterChildElems(_.name == EmlReportingUnitVotesEName).map(parseReportingUnitVotes)
@@ -70,10 +69,10 @@ object ElectionParser {
   def parseContestId(elem: BackingNodes.Elem): ContestId = {
     require(elem.name == EmlContestIdentifierEName, s"Expected $EmlContestIdentifierEName but got ${elem.name}")
 
-    ContestId(elem.attr(IdEName), elem.findChildElem(_.name == EmlContestNameEName).map(_.text).getOrElse(""))
+    ContestId(elem.attr(IdEName), elem.findChildElem(_.name == EmlContestNameEName).map(_.text))
   }
 
-  def parseVotes(elem: BackingNodes.Elem): Votes = {
+  def parseVotes(elem: BackingNodes.Elem): VotesSection = {
     if (elem.name == EmlTotalVotesEName) {
       parseTotalVotes(elem)
     } else {
@@ -81,13 +80,13 @@ object ElectionParser {
     }
   }
 
-  def parseTotalVotes(elem: BackingNodes.Elem): TotalVotes = {
+  def parseTotalVotes(elem: BackingNodes.Elem): TotalVotesSection = {
     require(elem.name == EmlTotalVotesEName, s"Expected $EmlTotalVotesEName but got ${elem.name}")
 
     doParseTotalVotes(elem)
   }
 
-  def parseReportingUnitVotes(elem: BackingNodes.Elem): ReportingUnitVotes = {
+  def parseReportingUnitVotes(elem: BackingNodes.Elem): ReportingUnitVotesSection = {
     require(elem.name == EmlReportingUnitVotesEName, s"Expected $EmlReportingUnitVotesEName but got ${elem.name}")
 
     val resultAsTotalVotes = doParseTotalVotes(elem)
@@ -95,7 +94,7 @@ object ElectionParser {
     val reportingUnitIdElem: BackingNodes.Elem = elem.findChildElem(_.name == EmlReportingUnitIdentifierEName).get
     val reportingUnitId: ReportingUnitId = ReportingUnitId(reportingUnitIdElem.attr(IdEName), reportingUnitIdElem.text)
 
-    ReportingUnitVotes(
+    ReportingUnitVotesSection(
       reportingUnitId,
       resultAsTotalVotes.selections,
       resultAsTotalVotes.votesCast,
@@ -105,24 +104,26 @@ object ElectionParser {
     )
   }
 
-  def parseSelection(elem: BackingNodes.Elem, contextAffiliationId: AffiliationId): Selection = {
+  def parseSelection(elem: BackingNodes.Elem, contextAffiliationId: AffiliationId): VotesSelection = {
     require(elem.name == EmlSelectionEName, s"Expected $EmlSelectionEName but got ${elem.name}")
 
     val validVotes: Long = elem.findChildElem(_.name == EmlValidVotesEName).get.text.toLong
 
     if (elem.findChildElem(_.name == EmlAffiliationIdentifierEName).isEmpty) {
-      Selection.OfCandidate(parseCandidateKey(elem.findChildElem(_.name == EmlCandidateEName).get, contextAffiliationId), validVotes)
+      VotesSelection.OfCandidate(parseCandidateKey(elem.findChildElem(_.name == EmlCandidateEName).get, contextAffiliationId), validVotes)
     } else {
-      Selection.OfAffiliation(parseAffiliationId(elem.findChildElem(_.name == EmlAffiliationIdentifierEName).get), validVotes)
+      VotesSelection.OfAffiliation(parseAffiliationId(elem.findChildElem(_.name == EmlAffiliationIdentifierEName).get), validVotes)
     }
   }
 
   def parseCandidateKey(elem: BackingNodes.Elem, contextAffiliationId: AffiliationId): CandidateKey = {
     require(elem.name == EmlCandidateEName, s"Expected $EmlCandidateEName but got ${elem.name}")
 
-    def getIdOrShortCode(e: BackingNodes.Elem): String = e.attrOption(IdEName).orElse(e.attrOption(ShortCodeEName)).getOrElse("")
-
-    CandidateKey(contextAffiliationId, elem.findChildElem(_.name == EmlCandidateIdentifierEName).get.pipe(getIdOrShortCode))
+    CandidateKey(
+      contextAffiliationId,
+      elem.findChildElem(_.name == EmlCandidateIdentifierEName).flatMap(_.attrOption(IdEName)).getOrElse(""),
+      elem.findChildElem(_.name == EmlCandidateIdentifierEName).flatMap(_.attrOption(ShortCodeEName))
+    )
   }
 
   def parseAffiliationId(elem: BackingNodes.Elem): AffiliationId = {
@@ -149,12 +150,12 @@ object ElectionParser {
     }
   }
 
-  private def doParseTotalVotes(elem: BackingNodes.Elem): TotalVotes = {
+  private def doParseTotalVotes(elem: BackingNodes.Elem): TotalVotesSection = {
     val candidateGroups: Seq[CandidateGroup] = collectCandidateGroups(elem.filterChildElems(_.name == EmlSelectionEName))
 
-    val selections: Seq[Selection] = candidateGroups.flatMap(_.parseSelections())
+    val selections: Seq[VotesSelection] = candidateGroups.flatMap(_.parseSelections())
 
-    TotalVotes(
+    TotalVotesSection(
       selections,
       elem.findChildElem(_.name == EmlCastEName).get.text.toLong,
       elem.findChildElem(_.name == EmlTotalCountedEName).get.text.toLong,
@@ -165,12 +166,12 @@ object ElectionParser {
 
   private final class CandidateGroup(val affiliationElem: BackingNodes.Elem, val candidateElems: Seq[BackingNodes.Elem]) {
 
-    def parseSelections(): Seq[Selection] = {
+    def parseSelections(): Seq[VotesSelection] = {
       val affiliationId = parseAffiliationId(affiliationElem.findChildElem(_.name == EmlAffiliationIdentifierEName).get)
 
-      val affiliationSelection: Selection = parseSelection(affiliationElem, affiliationId)
+      val affiliationSelection: VotesSelection = parseSelection(affiliationElem, affiliationId)
 
-      val candidateSelections: Seq[Selection] = candidateElems.map(e => parseSelection(e, affiliationId))
+      val candidateSelections: Seq[VotesSelection] = candidateElems.map(e => parseSelection(e, affiliationId))
 
       candidateSelections.prepended(affiliationSelection)
     }

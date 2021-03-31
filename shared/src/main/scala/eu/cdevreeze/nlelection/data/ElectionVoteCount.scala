@@ -17,8 +17,9 @@
 package eu.cdevreeze.nlelection.data
 
 /**
- * Election, containing one or more contests.
+ * The equivalent of an eml:Election element within an eml:Count context. It can have multiple eml:Contest descendant
+ * elements, each having eml:TotalVotes and eml:ReportingUnitVotes child elements.
  *
  * @author Chris de Vreeze
  */
-final case class Election(electionId: ElectionId, contests: Seq[Contest])
+final case class ElectionVoteCount(electionId: ElectionId, contests: Seq[ContestVoteCount])

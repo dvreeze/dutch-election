@@ -19,25 +19,26 @@ package eu.cdevreeze.nlelection.data
 import scala.collection.immutable.SeqMap
 
 /**
- * Contest, with all its valid votes.
+ * The equivalent of an eml:Contest element within an eml:Count context. The eml:Contest elements in this context
+ * contain eml:TotalVotes and eml:ReportingUnitVotes child elements holding vote count data.
  *
  * @author Chris de Vreeze
  */
-final case class Contest private (
+final case class ContestVoteCount private (
     contestId: ContestId,
-    totalVotes: TotalVotes,
-    reportingUnitVotesMap: SeqMap[ReportingUnitId, ReportingUnitVotes]) {
+    totalVotes: TotalVotesSection,
+    reportingUnitVotesMap: SeqMap[ReportingUnitId, ReportingUnitVotesSection]) {
 
   assert(reportingUnitVotesMap.forall(kv => kv._2.reportingUnitId == kv._1))
 
-  def votesMap: SeqMap[Option[ReportingUnitId], Votes] = {
-    val optReportingUnitVotesMap: Map[Option[ReportingUnitId], Votes] =
+  def votesMap: SeqMap[Option[ReportingUnitId], VotesSection] = {
+    val optReportingUnitVotesMap: Map[Option[ReportingUnitId], VotesSection] =
       reportingUnitVotesMap.toSeq.map(kv => Option(kv._1) -> kv._2).to(SeqMap)
 
     SeqMap(Option.empty[ReportingUnitId] -> totalVotes).concat(optReportingUnitVotesMap)
   }
 
-  def votesSeq: Seq[Votes] = reportingUnitVotesMap.values.toSeq.prepended(totalVotes)
+  def votesSeq: Seq[VotesSection] = reportingUnitVotesMap.values.toSeq.prepended(totalVotes)
 
   def isConsistentRegardingValidVotesAcrossUnits(affiliationId: AffiliationId): Boolean = {
     val totalVotesForAffiliation: Long = totalVotes.filterNonCandidateSelectionsByAffiliationId(affiliationId).map(_.validVotes).sum
@@ -61,9 +62,9 @@ final case class Contest private (
   }
 }
 
-object Contest {
+object ContestVoteCount {
 
-  def from(contestId: ContestId, totalVotes: TotalVotes, reportingUnitVotesSeq: Seq[ReportingUnitVotes]): Contest = {
-    Contest(contestId, totalVotes, reportingUnitVotesSeq.map(votes => votes.reportingUnitId -> votes).to(SeqMap))
+  def from(contestId: ContestId, totalVotes: TotalVotesSection, reportingUnitVotesSeq: Seq[ReportingUnitVotesSection]): ContestVoteCount = {
+    ContestVoteCount(contestId, totalVotes, reportingUnitVotesSeq.map(votes => votes.reportingUnitId -> votes).to(SeqMap))
   }
 }

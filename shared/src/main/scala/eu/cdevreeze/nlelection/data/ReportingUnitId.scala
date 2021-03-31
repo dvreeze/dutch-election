@@ -17,7 +17,9 @@
 package eu.cdevreeze.nlelection.data
 
 /**
- * Reporting unit ID, containing an ID and name.
+ * Reporting unit ID, containing an ID and name. It corresponds to an eml:ReportingUnitIdentifier element, where the
+ * description is the text of the element. The parent element would typically be an eml:ReportingUnitVotes element
+ * (within an eml:Count context).
  *
  * @author Chris de Vreeze
  */

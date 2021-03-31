@@ -18,6 +18,8 @@ package eu.cdevreeze.nlelection.data
 
 /**
  * Election definition (or part of it), containing foremost an election tree and the registered parties.
+ * It corresponds to an eml:Election element as used in the context of an eml:ElectionEvent parent element.
+ * It typically contains www.kiesraad.nl extensions to EML.
  *
  * @author Chris de Vreeze
  */

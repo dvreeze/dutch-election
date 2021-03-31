@@ -28,7 +28,8 @@ import eu.cdevreeze.yaidom2.queryapi.BackingNodes
 import scala.util.chaining._
 
 /**
- * Parser of election definitions and their parts in EML XML.
+ * Parser of election definitions and their parts in EML XML. Election definitions are recognized in EML XML by an
+ * eml:ElectionEvent child element of the eml:EML root element.
  *
  * @author Chris de Vreeze
  */
@@ -37,6 +38,8 @@ object ElectionDefinitionParser {
   import ENames._
 
   def parse(elem: BackingNodes.Elem): ElectionDefinition = {
+    require(elem.findDescendantElemOrSelf(_.name == EmlElectionEventEName).nonEmpty, s"Expected $EmlElectionEventEName 'somewhere'")
+
     ElectionDefinition(
       elem.findDescendantElem(_.name == EmlElectionIdentifierEName).get.pipe(parseElectionIdentifier),
       elem.findDescendantElem(_.name == EmlContestIdentifierEName).get.attr(IdEName),

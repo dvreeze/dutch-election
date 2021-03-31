@@ -19,7 +19,7 @@ package eu.cdevreeze.nlelection.data
 import scala.collection.immutable.SeqMap
 
 /**
- * Election tree, as a tree of regions.
+ * Election tree, as a tree of regions. It is a www.kiesraad.nl extension, as kr:ElectionTree element.
  *
  * @author Chris de Vreeze
  */

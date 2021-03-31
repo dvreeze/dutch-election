@@ -17,8 +17,14 @@
 package eu.cdevreeze.nlelection.data
 
 /**
- * Candidate key, consisting of an affiliation ID plus candidate ID which is unique within the affiliation.
+ * Candidate key, consisting of an affiliation ID plus candidate ID which is assumed to be unique within the affiliation.
+ * It can occur in just about any kind of EML XML document.
+ *
+ * The ID is assumed to be unique given an affiliation ID.
+ *
+ * It corresponds to an eml:CandidateIdentifier element in EML XML, within or preceded (as sibling) by an eml:AffiliationIdentifier
+ * element as context.
  *
  * @author Chris de Vreeze
  */
-final case class CandidateKey(affiliationId: AffiliationId, candidateId: String)
+final case class CandidateKey(affiliationId: AffiliationId, candidateId: String, shortCodeOption: Option[String])

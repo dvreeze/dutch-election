@@ -18,18 +18,19 @@ package eu.cdevreeze.nlelection.data
 
 import scala.collection.immutable.SeqMap
 
-import eu.cdevreeze.nlelection.data.Votes.ReasonCode
+import eu.cdevreeze.nlelection.data.VotesSection.ReasonCode
 
 /**
- * Votes, either for a reporting unit or in total.
+ * Votes section, either for a reporting unit or in total. It corresponds to an eml:ReportingUnitVotes element or an
+ * eml:TotalVotes element, within an eml:Count context.
  *
  * @author Chris de Vreeze
  */
-sealed trait Votes {
+sealed trait VotesSection {
 
   def reportingUnitIdOption: Option[ReportingUnitId]
 
-  def selectionsByAffiliationId: Map[AffiliationId, Seq[Selection]]
+  def selectionsByAffiliationId: Map[AffiliationId, Seq[VotesSelection]]
 
   def votesCast: Long
 
@@ -39,20 +40,20 @@ sealed trait Votes {
 
   def uncountedVotes: SeqMap[ReasonCode, Long]
 
-  final def selections: Seq[Selection] = {
+  final def selections: Seq[VotesSelection] = {
     selectionsByAffiliationId.values.flatten.toSeq.sortBy(_.sortKey)
   }
 
-  final def filterSelectionsByAffiliationId(affiliationId: AffiliationId): Seq[Selection] = {
+  final def filterSelectionsByAffiliationId(affiliationId: AffiliationId): Seq[VotesSelection] = {
     selectionsByAffiliationId.getOrElse(affiliationId, Seq.empty)
   }
 
-  final def filterNonCandidateSelectionsByAffiliationId(affiliationId: AffiliationId): Seq[Selection] = {
+  final def filterNonCandidateSelectionsByAffiliationId(affiliationId: AffiliationId): Seq[VotesSelection] = {
     filterSelectionsByAffiliationId(affiliationId).filter(_.candidateKeyOption.isEmpty)
   }
 
   final def isConsistentRegardingValidVotes(affiliationId: AffiliationId): Boolean = {
-    val selectionsForAffiliation: Seq[Selection] = filterSelectionsByAffiliationId(affiliationId)
+    val selectionsForAffiliation: Seq[VotesSelection] = filterSelectionsByAffiliationId(affiliationId)
 
     selectionsForAffiliation.filter(_.candidateKeyOption.nonEmpty).map(_.validVotes).sum ==
       selectionsForAffiliation.filter(_.candidateKeyOption.isEmpty).map(_.validVotes).sum
@@ -63,61 +64,61 @@ sealed trait Votes {
   }
 }
 
-final case class TotalVotes(
-    selectionsByAffiliationId: Map[AffiliationId, Seq[Selection]],
+final case class TotalVotesSection(
+    selectionsByAffiliationId: Map[AffiliationId, Seq[VotesSelection]],
     votesCast: Long,
     totalCounted: Long,
     rejectedVotes: SeqMap[ReasonCode, Long],
     uncountedVotes: SeqMap[ReasonCode, Long])
-    extends Votes {
+    extends VotesSection {
 
   require(selectionsByAffiliationId.forall { case (affId, selections) => selections.forall(_.affiliationId == affId) })
 
   def reportingUnitIdOption: Option[ReportingUnitId] = None
 }
 
-object TotalVotes {
+object TotalVotesSection {
 
   def apply(
-      selections: Seq[Selection],
+      selections: Seq[VotesSelection],
       votesCast: Long,
       totalCounted: Long,
       rejectedVotes: SeqMap[ReasonCode, Long],
-      uncountedVotes: SeqMap[ReasonCode, Long]): TotalVotes = {
+      uncountedVotes: SeqMap[ReasonCode, Long]): TotalVotesSection = {
 
     apply(selections.groupBy(_.affiliationId), votesCast, totalCounted, rejectedVotes, uncountedVotes)
   }
 }
 
-final case class ReportingUnitVotes(
+final case class ReportingUnitVotesSection(
     reportingUnitId: ReportingUnitId,
-    selectionsByAffiliationId: Map[AffiliationId, Seq[Selection]],
+    selectionsByAffiliationId: Map[AffiliationId, Seq[VotesSelection]],
     votesCast: Long,
     totalCounted: Long,
     rejectedVotes: SeqMap[ReasonCode, Long],
     uncountedVotes: SeqMap[ReasonCode, Long])
-    extends Votes {
+    extends VotesSection {
 
   require(selectionsByAffiliationId.forall { case (affId, selections) => selections.forall(_.affiliationId == affId) })
 
   def reportingUnitIdOption: Option[ReportingUnitId] = Some(reportingUnitId)
 }
 
-object ReportingUnitVotes {
+object ReportingUnitVotesSection {
 
   def apply(
       reportingUnitId: ReportingUnitId,
-      selections: Seq[Selection],
+      selections: Seq[VotesSelection],
       votesCast: Long,
       totalCounted: Long,
       rejectedVotes: SeqMap[ReasonCode, Long],
-      uncountedVotes: SeqMap[ReasonCode, Long]): ReportingUnitVotes = {
+      uncountedVotes: SeqMap[ReasonCode, Long]): ReportingUnitVotesSection = {
 
     apply(reportingUnitId, selections.groupBy(_.affiliationId), votesCast, totalCounted, rejectedVotes, uncountedVotes)
   }
 }
 
-object Votes {
+object VotesSection {
 
   /**
    * ReasonCode for votes being uncounted or rejected.
