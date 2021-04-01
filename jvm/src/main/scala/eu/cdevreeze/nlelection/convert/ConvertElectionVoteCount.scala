@@ -23,7 +23,7 @@ import scala.util.Using
 import com.github.tototoshi.csv.CSVWriter
 import eu.cdevreeze.nlelection.common.ENames
 import eu.cdevreeze.nlelection.data.ElectionVoteCount
-import eu.cdevreeze.nlelection.data.VotesSelection
+import eu.cdevreeze.nlelection.data.VoteCountSelection
 import eu.cdevreeze.nlelection.parse.ElectionVoteCountParser
 import eu.cdevreeze.yaidom2.node.saxon.SaxonDocument
 import eu.cdevreeze.yaidom2.node.saxon.SaxonNodes
@@ -67,8 +67,8 @@ object ConvertElectionVoteCount {
       selection <- votes.selections
     } yield {
       val kindOfSelection: String = selection match {
-        case VotesSelection.OfCandidate(_, _) => "Cnd"
-        case _                                => "Aff"
+        case VoteCountSelection.OfCandidate(_, _) => "Cnd"
+        case _                                    => "Aff"
       }
 
       Seq[String](

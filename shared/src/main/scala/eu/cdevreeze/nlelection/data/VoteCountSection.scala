@@ -18,7 +18,7 @@ package eu.cdevreeze.nlelection.data
 
 import scala.collection.immutable.SeqMap
 
-import eu.cdevreeze.nlelection.data.VotesSection.ReasonCode
+import eu.cdevreeze.nlelection.data.VoteCountSection.ReasonCode
 
 /**
  * Votes section, either for a reporting unit or in total. It corresponds to an eml:ReportingUnitVotes element or an
@@ -26,11 +26,11 @@ import eu.cdevreeze.nlelection.data.VotesSection.ReasonCode
  *
  * @author Chris de Vreeze
  */
-sealed trait VotesSection {
+sealed trait VoteCountSection {
 
   def reportingUnitIdOption: Option[ReportingUnitId]
 
-  def selectionsByAffiliationId: Map[AffiliationId, Seq[VotesSelection]]
+  def selectionsByAffiliationId: Map[AffiliationId, Seq[VoteCountSelection]]
 
   def votesCast: Long
 
@@ -40,20 +40,20 @@ sealed trait VotesSection {
 
   def uncountedVotes: SeqMap[ReasonCode, Long]
 
-  final def selections: Seq[VotesSelection] = {
+  final def selections: Seq[VoteCountSelection] = {
     selectionsByAffiliationId.values.flatten.toSeq.sortBy(_.sortKey)
   }
 
-  final def filterSelectionsByAffiliationId(affiliationId: AffiliationId): Seq[VotesSelection] = {
+  final def filterSelectionsByAffiliationId(affiliationId: AffiliationId): Seq[VoteCountSelection] = {
     selectionsByAffiliationId.getOrElse(affiliationId, Seq.empty)
   }
 
-  final def filterNonCandidateSelectionsByAffiliationId(affiliationId: AffiliationId): Seq[VotesSelection] = {
+  final def filterNonCandidateSelectionsByAffiliationId(affiliationId: AffiliationId): Seq[VoteCountSelection] = {
     filterSelectionsByAffiliationId(affiliationId).filter(_.candidateKeyOption.isEmpty)
   }
 
   final def isConsistentRegardingValidVotes(affiliationId: AffiliationId): Boolean = {
-    val selectionsForAffiliation: Seq[VotesSelection] = filterSelectionsByAffiliationId(affiliationId)
+    val selectionsForAffiliation: Seq[VoteCountSelection] = filterSelectionsByAffiliationId(affiliationId)
 
     selectionsForAffiliation.filter(_.candidateKeyOption.nonEmpty).map(_.validVotes).sum ==
       selectionsForAffiliation.filter(_.candidateKeyOption.isEmpty).map(_.validVotes).sum
@@ -65,12 +65,12 @@ sealed trait VotesSection {
 }
 
 final case class TotalVotesSection(
-    selectionsByAffiliationId: Map[AffiliationId, Seq[VotesSelection]],
+    selectionsByAffiliationId: Map[AffiliationId, Seq[VoteCountSelection]],
     votesCast: Long,
     totalCounted: Long,
     rejectedVotes: SeqMap[ReasonCode, Long],
     uncountedVotes: SeqMap[ReasonCode, Long])
-    extends VotesSection {
+    extends VoteCountSection {
 
   require(selectionsByAffiliationId.forall { case (affId, selections) => selections.forall(_.affiliationId == affId) })
 
@@ -80,7 +80,7 @@ final case class TotalVotesSection(
 object TotalVotesSection {
 
   def apply(
-      selections: Seq[VotesSelection],
+      selections: Seq[VoteCountSelection],
       votesCast: Long,
       totalCounted: Long,
       rejectedVotes: SeqMap[ReasonCode, Long],
@@ -92,12 +92,12 @@ object TotalVotesSection {
 
 final case class ReportingUnitVotesSection(
     reportingUnitId: ReportingUnitId,
-    selectionsByAffiliationId: Map[AffiliationId, Seq[VotesSelection]],
+    selectionsByAffiliationId: Map[AffiliationId, Seq[VoteCountSelection]],
     votesCast: Long,
     totalCounted: Long,
     rejectedVotes: SeqMap[ReasonCode, Long],
     uncountedVotes: SeqMap[ReasonCode, Long])
-    extends VotesSection {
+    extends VoteCountSection {
 
   require(selectionsByAffiliationId.forall { case (affId, selections) => selections.forall(_.affiliationId == affId) })
 
@@ -108,7 +108,7 @@ object ReportingUnitVotesSection {
 
   def apply(
       reportingUnitId: ReportingUnitId,
-      selections: Seq[VotesSelection],
+      selections: Seq[VoteCountSelection],
       votesCast: Long,
       totalCounted: Long,
       rejectedVotes: SeqMap[ReasonCode, Long],
@@ -118,7 +118,7 @@ object ReportingUnitVotesSection {
   }
 }
 
-object VotesSection {
+object VoteCountSection {
 
   /**
    * ReasonCode for votes being uncounted or rejected.

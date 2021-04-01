@@ -22,7 +22,7 @@ package eu.cdevreeze.nlelection.data
  *
  * @author Chris de Vreeze
  */
-sealed trait VotesSelection {
+sealed trait VoteCountSelection {
 
   def affiliationId: AffiliationId
 
@@ -35,16 +35,16 @@ sealed trait VotesSelection {
   }
 }
 
-object VotesSelection {
+object VoteCountSelection {
 
-  final case class OfCandidate(candidateKey: CandidateKey, validVotes: Long) extends VotesSelection {
+  final case class OfCandidate(candidateKey: CandidateKey, validVotes: Long) extends VoteCountSelection {
 
     override def affiliationId: AffiliationId = candidateKey.affiliationId
 
     override def candidateKeyOption: Option[CandidateKey] = Some(candidateKey)
   }
 
-  final case class OfAffiliation(affiliationId: AffiliationId, validVotes: Long) extends VotesSelection {
+  final case class OfAffiliation(affiliationId: AffiliationId, validVotes: Long) extends VoteCountSelection {
 
     override def candidateKeyOption: Option[CandidateKey] = None
   }

@@ -31,14 +31,14 @@ final case class ContestVoteCount private (
 
   assert(reportingUnitVotesMap.forall(kv => kv._2.reportingUnitId == kv._1))
 
-  def votesMap: SeqMap[Option[ReportingUnitId], VotesSection] = {
-    val optReportingUnitVotesMap: Map[Option[ReportingUnitId], VotesSection] =
+  def votesMap: SeqMap[Option[ReportingUnitId], VoteCountSection] = {
+    val optReportingUnitVotesMap: Map[Option[ReportingUnitId], VoteCountSection] =
       reportingUnitVotesMap.toSeq.map(kv => Option(kv._1) -> kv._2).to(SeqMap)
 
     SeqMap(Option.empty[ReportingUnitId] -> totalVotes).concat(optReportingUnitVotesMap)
   }
 
-  def votesSeq: Seq[VotesSection] = reportingUnitVotesMap.values.toSeq.prepended(totalVotes)
+  def votesSeq: Seq[VoteCountSection] = reportingUnitVotesMap.values.toSeq.prepended(totalVotes)
 
   def isConsistentRegardingValidVotesAcrossUnits(affiliationId: AffiliationId): Boolean = {
     val totalVotesForAffiliation: Long = totalVotes.filterNonCandidateSelectionsByAffiliationId(affiliationId).map(_.validVotes).sum
