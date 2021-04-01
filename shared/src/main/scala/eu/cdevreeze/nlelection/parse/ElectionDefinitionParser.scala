@@ -39,17 +39,14 @@ object ElectionDefinitionParser {
 
   def parse(elem: BackingNodes.Elem): ElectionDefinition = {
     require(elem.findDescendantElemOrSelf(_.name == EmlElectionEventEName).nonEmpty, s"Expected $EmlElectionEventEName 'somewhere'")
+    val electionEventElem: BackingNodes.Elem = elem.findDescendantElemOrSelf(_.name == EmlElectionEventEName).get
 
     ElectionDefinition(
-      elem.findDescendantElem(_.name == EmlElectionIdentifierEName).get.pipe(parseElectionIdentifier),
-      elem.findDescendantElem(_.name == EmlContestIdentifierEName).get.attr(IdEName),
-      elem.findDescendantElem(_.name == KrElectionTreeEName).get.pipe(parseElectionTree),
-      elem.filterDescendantElems(_.name == KrRegisteredAppellationEName).map(_.text),
+      electionEventElem.findDescendantElem(_.name == EmlElectionIdentifierEName).get.pipe(parseElectionIdentifier),
+      electionEventElem.findDescendantElem(_.name == EmlContestIdentifierEName).get.attr(IdEName),
+      electionEventElem.findDescendantElem(_.name == KrElectionTreeEName).get.pipe(parseElectionTree),
+      electionEventElem.filterDescendantElems(_.name == KrRegisteredAppellationEName).map(_.text),
     )
-  }
-
-  def parseElectionIdentifier(elem: BackingNodes.Elem): ElectionId = {
-    ElectionIdentifierParser.parseElectionIdentifier(elem)
   }
 
   def parseElectionTree(elem: BackingNodes.Elem): ElectionTree = {
@@ -71,5 +68,9 @@ object ElectionDefinitionParser {
       Committee(committeeElem.attr(CommitteeCategoryEName), committeeElem.attrOption(CommitteeNameEName)),
       elem.attrOption(SuperiorRegionNumberEName).map(nr => RegionKey(elem.attr(SuperiorRegionCategoryEName), nr.toLong)),
     )
+  }
+
+  private def parseElectionIdentifier(elem: BackingNodes.Elem): ElectionId = {
+    ElectionIdentifierParser.parseElectionIdentifier(elem)
   }
 }

@@ -24,6 +24,7 @@ import scala.util.Using
 
 import com.github.tototoshi.csv.CSVWriter
 import eu.cdevreeze.nlelection.common.ENames
+import eu.cdevreeze.nlelection.data.CandidateList
 import eu.cdevreeze.nlelection.data.ElectionDefinition
 import eu.cdevreeze.nlelection.data.ElectionVoteCount
 import eu.cdevreeze.yaidom2.node.saxon.SaxonDocument
@@ -36,7 +37,7 @@ import net.sf.saxon.s9api.Processor
  */
 object ConvertAll {
 
-  // TODO Other types of files than just election files
+  // TODO 'Result' files
 
   private val saxonProcessor: Processor = new Processor(false)
 
@@ -101,6 +102,11 @@ object ConvertAll {
       println(s"Converting election definition file '$inputFile' to CSV file '$outputFile' ...")
 
       convertElectionDefinitionFile(saxonDoc, outputFile)
+    } else if (saxonDoc.documentElement.findDescendantElemOrSelf(_.name == ENames.EmlCandidateListEName).nonEmpty) {
+      // scalastyle:off
+      println(s"Converting candidate list file '$inputFile' to CSV file '$outputFile' ...")
+
+      convertCandidateListFile(saxonDoc, outputFile)
     } else {
       // scalastyle:off
       println(s"Currently unsupported file '$inputFile'")
@@ -130,6 +136,18 @@ object ConvertAll {
     val electionDef: ElectionDefinition = ConvertElectionDefinition.parseElectionDefinition(inputDoc.documentElement)
 
     val csvRows: Seq[Seq[String]] = ConvertElectionDefinition.convertElectionTreeToCsvWithHeader(electionDef.electionTree)
+
+    Using.Manager { use =>
+      val csvWriter: CSVWriter = use(CSVWriter.open(outputFile))
+
+      csvWriter.writeAll(csvRows)
+    }.get
+  }
+
+  def convertCandidateListFile(inputDoc: SaxonDocument, outputFile: File): Unit = {
+    val candidateList: CandidateList = ConvertCandidateList.parseNestedCandidateList(inputDoc.documentElement)
+
+    val csvRows: Seq[Seq[String]] = ConvertCandidateList.convertCandidateListToCsvWithHeader(candidateList)
 
     Using.Manager { use =>
       val csvWriter: CSVWriter = use(CSVWriter.open(outputFile))

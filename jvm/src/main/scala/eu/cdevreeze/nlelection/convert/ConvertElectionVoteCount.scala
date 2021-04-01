@@ -43,7 +43,7 @@ object ConvertElectionVoteCount {
   }
 
   def parseElectionVoteCount(elem: SaxonNodes.Elem): ElectionVoteCount = {
-    ElectionVoteCountParser.parse(elem)
+    ElectionVoteCountParser.parseElectionVoteCount(elem)
   }
 
   def convertElectionVoteCountToCsvWithHeader(election: ElectionVoteCount): Seq[Seq[String]] = {
