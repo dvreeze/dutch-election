@@ -46,7 +46,7 @@ object ConvertElectionVoteCount {
     ElectionVoteCountParser.parse(elem)
   }
 
-  def convertElectionToCsvWithHeader(election: ElectionVoteCount): Seq[Seq[String]] = {
+  def convertElectionVoteCountToCsvWithHeader(election: ElectionVoteCount): Seq[Seq[String]] = {
     val header =
       Seq(
         "ElectionKey",
@@ -100,7 +100,7 @@ object ConvertElectionVoteCount {
 
       require(election.contests.forall(_.isConsistentRegardingValidVotes), s"Inconsistencies found in totals of valid vote counts")
 
-      val csvRows: Seq[Seq[String]] = convertElectionToCsvWithHeader(election)
+      val csvRows: Seq[Seq[String]] = convertElectionVoteCountToCsvWithHeader(election)
 
       csvWriter.writeAll(csvRows)
     }.get

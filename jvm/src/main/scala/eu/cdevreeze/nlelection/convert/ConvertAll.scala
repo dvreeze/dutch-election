@@ -26,7 +26,6 @@ import com.github.tototoshi.csv.CSVWriter
 import eu.cdevreeze.nlelection.common.ENames
 import eu.cdevreeze.nlelection.data.ElectionDefinition
 import eu.cdevreeze.nlelection.data.ElectionVoteCount
-import eu.cdevreeze.yaidom2.core.EName
 import eu.cdevreeze.yaidom2.node.saxon.SaxonDocument
 import net.sf.saxon.s9api.Processor
 
@@ -111,7 +110,7 @@ object ConvertAll {
   def convertElectionVoteCountFile(inputDoc: SaxonDocument, outputFile: File): Unit = {
     val election: ElectionVoteCount = ConvertElectionVoteCount.parseNestedElectionVoteCount(inputDoc.documentElement)
 
-    val csvRows: Seq[Seq[String]] = ConvertElectionVoteCount.convertElectionToCsvWithHeader(election)
+    val csvRows: Seq[Seq[String]] = ConvertElectionVoteCount.convertElectionVoteCountToCsvWithHeader(election)
 
     require(
       election.contests.forall(_.isConsistentRegardingValidVotes),
