@@ -58,6 +58,7 @@ object ConvertElectionVoteCount {
         "KindOfSelection (Candidate/Affiliation)",
         "AffiliationId",
         "Candidate",
+        "Candidate shortcode",
         "ValidVotes"
       )
 
@@ -81,6 +82,7 @@ object ConvertElectionVoteCount {
         kindOfSelection,
         selection.affiliationId.id,
         selection.candidateKeyOption.map(_.candidateId).getOrElse(""),
+        selection.candidateKeyOption.flatMap(_.shortCodeOption).getOrElse(""),
         selection.validVotes.toString
       )
     }).prepended(header)
