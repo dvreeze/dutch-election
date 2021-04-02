@@ -22,26 +22,26 @@ import java.util.Locale
 import scala.util.Using
 
 import com.github.tototoshi.csv.CSVWriter
-import eu.cdevreeze.nlelection.data.CandidateList
-import eu.cdevreeze.nlelection.parse.CandidateListParser
+import eu.cdevreeze.nlelection.data.ElectionResult
+import eu.cdevreeze.nlelection.parse.ElectionResultParser
 import eu.cdevreeze.yaidom2.node.saxon.SaxonDocument
 import eu.cdevreeze.yaidom2.node.saxon.SaxonNodes
 import net.sf.saxon.s9api.Processor
 
 /**
- * Converter of candidate lists in EML XML to CSV.
+ * Converter of election results in EML XML to CSV.
  *
  * @author Chris de Vreeze
  */
-object ConvertCandidateList {
+object ConvertElectionResult {
 
   private val saxonProcessor: Processor = new Processor(false)
 
-  def parseCandidateList(elem: SaxonNodes.Elem): CandidateList = {
-    CandidateListParser.parse(elem)
+  def parseElectionResult(elem: SaxonNodes.Elem): ElectionResult = {
+    ElectionResultParser.parse(elem)
   }
 
-  def convertCandidateListToCsvWithHeader(candidateList: CandidateList): Seq[Seq[String]] = {
+  def convertElectionResultToCsvWithHeader(electionResult: ElectionResult): Seq[Seq[String]] = {
     val header =
       Seq(
         "ElectionKey",
@@ -51,6 +51,8 @@ object ConvertCandidateList {
         "AffiliationName",
         "Candidate",
         "Candidate shortcode",
+        "Ranking",
+        "Elected",
         "Initials",
         "FirstName",
         "LastName",
@@ -58,31 +60,34 @@ object ConvertCandidateList {
         "Address",
       )
 
+    // TODO Show affiliation results without candidates as well
+
     (for {
-      election <- candidateList.elections
-      contest <- election.contests
-      affiliation <- contest.affiliations
-      candidate <- affiliation.candidates
+      contestResult <- electionResult.contestResults
+      affiliationResult <- contestResult.affiliationResults
+      candidateResult <- affiliationResult.candidateResults
     } yield {
       Seq[String](
-        election.id.key,
-        contest.id.id,
-        contest.id.contestNameOption.getOrElse(""),
-        affiliation.id.id,
-        affiliation.id.registeredName,
-        candidate.key.candidateId,
-        candidate.key.shortCodeOption.getOrElse(""),
-        candidate.fullName.initialsOption.getOrElse(""),
-        candidate.fullName.firstNameOption.getOrElse(""),
-        candidate.fullName.lastName,
-        candidate.genderOption.map(_.toString.toLowerCase(Locale.ENGLISH)).getOrElse(""),
-        candidate.qualifyingAddressOption.map(_.localityName).getOrElse(""),
+        electionResult.id.key,
+        contestResult.id.id,
+        contestResult.id.contestNameOption.getOrElse(""),
+        affiliationResult.id.id,
+        affiliationResult.id.registeredName,
+        candidateResult.candidate.key.candidateId,
+        candidateResult.candidate.key.shortCodeOption.getOrElse(""),
+        candidateResult.rankingOption.map(_.toString).getOrElse(""),
+        candidateResult.elected.toString,
+        candidateResult.candidate.fullName.initialsOption.getOrElse(""),
+        candidateResult.candidate.fullName.firstNameOption.getOrElse(""),
+        candidateResult.candidate.fullName.lastName,
+        candidateResult.candidate.genderOption.map(_.toString.toLowerCase(Locale.ENGLISH)).getOrElse(""),
+        candidateResult.candidate.qualifyingAddressOption.map(_.localityName).getOrElse(""),
       )
     }).prepended(header)
   }
 
   def main(args: Array[String]): Unit = {
-    require(args.lengthIs == 2, s"Usage: ConvertCandidateList <input XML file> <output CSV file>")
+    require(args.lengthIs == 2, s"Usage: ConvertElectionResult <input XML file> <output CSV file>")
 
     val inputFile: File = new File(args(0)).ensuring(_.isFile)
     val outputFile: File = new File(args(1))
@@ -92,9 +97,9 @@ object ConvertCandidateList {
 
       val doc: SaxonDocument = SaxonDocument(saxonProcessor.newDocumentBuilder().build(inputFile))
 
-      val candidateList: CandidateList = parseCandidateList(doc.documentElement)
+      val electionResult: ElectionResult = parseElectionResult(doc.documentElement)
 
-      val csvRows: Seq[Seq[String]] = convertCandidateListToCsvWithHeader(candidateList)
+      val csvRows: Seq[Seq[String]] = convertElectionResultToCsvWithHeader(electionResult)
 
       csvWriter.writeAll(csvRows)
     }.get

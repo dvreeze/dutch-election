@@ -31,6 +31,9 @@ object ElectionIdentifierParser {
 
   import ENames._
 
+  /**
+   * Parses an eml:ElectionIdentifier XML element into an ElectionId.
+   */
   def parseElectionIdentifier(elem: BackingNodes.Elem): ElectionId = {
     require(elem.name == EmlElectionIdentifierEName, s"Expected $EmlElectionIdentifierEName but got ${elem.name}")
 

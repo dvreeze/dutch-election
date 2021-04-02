@@ -43,6 +43,10 @@ object CandidateListParser {
 
   import ENames._
 
+  /**
+   * Parses an XML element into a CandidateList. The XML tree must contain an eml:CandidateList element, and that's where
+   * parsing starts.
+   */
   def parse(elem: BackingNodes.Elem): CandidateList = {
     require(elem.findDescendantElemOrSelf(_.name == EmlCandidateListEName).nonEmpty, s"Expected $EmlCandidateListEName 'somewhere'")
     val candidateListElem: BackingNodes.Elem = elem.findDescendantElemOrSelf(_.name == EmlCandidateListEName).get
@@ -109,23 +113,23 @@ object CandidateListParser {
     QualifyingAddress(elem.findDescendantElem(_.name == XalLocalityNameEName).map(_.text).getOrElse(""))
   }
 
-  private def parseElectionIdentifier(elem: BackingNodes.Elem): ElectionId = {
+  def parseElectionIdentifier(elem: BackingNodes.Elem): ElectionId = {
     ElectionIdentifierParser.parseElectionIdentifier(elem)
   }
 
-  private def parseContestId(elem: BackingNodes.Elem): ContestId = {
+  def parseContestId(elem: BackingNodes.Elem): ContestId = {
     require(elem.name == EmlContestIdentifierEName, s"Expected $EmlContestIdentifierEName but got ${elem.name}")
 
     ContestId(elem.attr(IdEName), elem.findChildElem(_.name == EmlContestNameEName).map(_.text))
   }
 
-  private def parseAffiliationId(elem: BackingNodes.Elem): AffiliationId = {
+  def parseAffiliationId(elem: BackingNodes.Elem): AffiliationId = {
     require(elem.name == EmlAffiliationIdentifierEName, s"Expected $EmlAffiliationIdentifierEName but got ${elem.name}")
 
     AffiliationId(elem.attr(IdEName), elem.findChildElem(_.name == EmlRegisteredNameEName).get.text)
   }
 
-  private def parseCandidateKey(elem: BackingNodes.Elem, affiliationId: AffiliationId): CandidateKey = {
+  def parseCandidateKey(elem: BackingNodes.Elem, affiliationId: AffiliationId): CandidateKey = {
     require(elem.name == EmlCandidateIdentifierEName, s"Expected $EmlCandidateIdentifierEName but got ${elem.name}")
 
     CandidateKey(

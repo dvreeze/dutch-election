@@ -26,6 +26,7 @@ import com.github.tototoshi.csv.CSVWriter
 import eu.cdevreeze.nlelection.common.ENames
 import eu.cdevreeze.nlelection.data.CandidateList
 import eu.cdevreeze.nlelection.data.ElectionDefinition
+import eu.cdevreeze.nlelection.data.ElectionResult
 import eu.cdevreeze.nlelection.data.ElectionVoteCount
 import eu.cdevreeze.yaidom2.node.saxon.SaxonDocument
 import net.sf.saxon.s9api.Processor
@@ -36,8 +37,6 @@ import net.sf.saxon.s9api.Processor
  * @author Chris de Vreeze
  */
 object ConvertAll {
-
-  // TODO 'Result' files
 
   private val saxonProcessor: Processor = new Processor(false)
 
@@ -107,6 +106,11 @@ object ConvertAll {
       println(s"Converting candidate list file '$inputFile' to CSV file '$outputFile' ...")
 
       convertCandidateListFile(saxonDoc, outputFile)
+    } else if (saxonDoc.documentElement.findDescendantElemOrSelf(_.name == ENames.EmlResultEName).nonEmpty) {
+      // scalastyle:off
+      println(s"Converting election result file '$inputFile' to CSV file '$outputFile' ...")
+
+      convertElectionResultFile(saxonDoc, outputFile)
     } else {
       // scalastyle:off
       println(s"Currently unsupported file '$inputFile'")
@@ -114,7 +118,7 @@ object ConvertAll {
   }
 
   def convertElectionVoteCountFile(inputDoc: SaxonDocument, outputFile: File): Unit = {
-    val election: ElectionVoteCount = ConvertElectionVoteCount.parseNestedElectionVoteCount(inputDoc.documentElement)
+    val election: ElectionVoteCount = ConvertElectionVoteCount.parseElectionVoteCount(inputDoc.documentElement)
 
     val csvRows: Seq[Seq[String]] = ConvertElectionVoteCount.convertElectionVoteCountToCsvWithHeader(election)
 
@@ -125,11 +129,7 @@ object ConvertAll {
 
     outputFile.getParentFile.mkdirs()
 
-    Using.Manager { use =>
-      val csvWriter: CSVWriter = use(CSVWriter.open(outputFile))
-
-      csvWriter.writeAll(csvRows)
-    }.get
+    writeCsvRows(csvRows, outputFile)
   }
 
   def convertElectionDefinitionFile(inputDoc: SaxonDocument, outputFile: File): Unit = {
@@ -137,18 +137,26 @@ object ConvertAll {
 
     val csvRows: Seq[Seq[String]] = ConvertElectionDefinition.convertElectionTreeToCsvWithHeader(electionDef.electionTree)
 
-    Using.Manager { use =>
-      val csvWriter: CSVWriter = use(CSVWriter.open(outputFile))
-
-      csvWriter.writeAll(csvRows)
-    }.get
+    writeCsvRows(csvRows, outputFile)
   }
 
   def convertCandidateListFile(inputDoc: SaxonDocument, outputFile: File): Unit = {
-    val candidateList: CandidateList = ConvertCandidateList.parseNestedCandidateList(inputDoc.documentElement)
+    val candidateList: CandidateList = ConvertCandidateList.parseCandidateList(inputDoc.documentElement)
 
     val csvRows: Seq[Seq[String]] = ConvertCandidateList.convertCandidateListToCsvWithHeader(candidateList)
 
+    writeCsvRows(csvRows, outputFile)
+  }
+
+  def convertElectionResultFile(inputDoc: SaxonDocument, outputFile: File): Unit = {
+    val electionResult: ElectionResult = ConvertElectionResult.parseElectionResult(inputDoc.documentElement)
+
+    val csvRows: Seq[Seq[String]] = ConvertElectionResult.convertElectionResultToCsvWithHeader(electionResult)
+
+    writeCsvRows(csvRows, outputFile)
+  }
+
+  private def writeCsvRows(csvRows: Seq[Seq[String]], outputFile: File): Unit = {
     Using.Manager { use =>
       val csvWriter: CSVWriter = use(CSVWriter.open(outputFile))
 

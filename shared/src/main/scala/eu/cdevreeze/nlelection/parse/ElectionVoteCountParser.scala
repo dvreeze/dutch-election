@@ -43,6 +43,17 @@ object ElectionVoteCountParser {
 
   import ENames._
 
+  /**
+   * Parses an XML element into an ElectionVoteCount. The XML tree must contain an eml:Count element, and that's where
+   * parsing starts.
+   */
+  def parse(elem: BackingNodes.Elem): ElectionVoteCount = {
+    require(elem.findDescendantElemOrSelf(_.name == EmlCountEName).nonEmpty, s"Expected $EmlCountEName 'somewhere'")
+    val countElem: BackingNodes.Elem = elem.findDescendantElemOrSelf(_.name == EmlCountEName).get
+
+    parseElectionVoteCount(countElem.findChildElem(_.name == EmlElectionEName).get)
+  }
+
   def parseElectionVoteCount(elem: BackingNodes.Elem): ElectionVoteCount = {
     require(elem.name == EmlElectionEName, s"Expected $EmlElectionEName but got ${elem.name}")
 
@@ -137,28 +148,30 @@ object ElectionVoteCountParser {
     )
   }
 
-  private def collectCandidateGroups(elems: Seq[BackingNodes.Elem]): Seq[CandidateGroup] = {
-    collectCandidateGroups(elems, Seq.empty)
+  private def collectCandidateGroups(selectionElems: Seq[BackingNodes.Elem]): Seq[CandidateGroup] = {
+    require(selectionElems.forall(_.name == EmlSelectionEName))
+
+    collectCandidateGroups(selectionElems, Seq.empty)
   }
 
   @tailrec
-  private def collectCandidateGroups(elems: Seq[BackingNodes.Elem], acc: Seq[CandidateGroup]): Seq[CandidateGroup] = {
-    if (elems.isEmpty) {
+  private def collectCandidateGroups(selectionElems: Seq[BackingNodes.Elem], acc: Seq[CandidateGroup]): Seq[CandidateGroup] = {
+    if (selectionElems.isEmpty) {
       acc
     } else {
-      require(elems.head.findChildElem(_.name == EmlAffiliationIdentifierEName).nonEmpty)
+      require(selectionElems.head.findChildElem(_.name == EmlAffiliationIdentifierEName).nonEmpty)
 
-      val (candidateElemsInGroup, remainder) = elems.drop(1).span(_.findChildElem(_.name == EmlCandidateEName).nonEmpty)
+      val (candidateElemsInGroup, remainder) = selectionElems.drop(1).span(_.findChildElem(_.name == EmlCandidateEName).nonEmpty)
 
       // Recursive call
-      collectCandidateGroups(remainder, acc.appended(new CandidateGroup(elems.head, candidateElemsInGroup)))
+      collectCandidateGroups(remainder, acc.appended(new CandidateGroup(selectionElems.head, candidateElemsInGroup)))
     }
   }
 
   private def doParseTotalVotesSection(elem: BackingNodes.Elem): TotalVotesSection = {
     val candidateGroups: Seq[CandidateGroup] = collectCandidateGroups(elem.filterChildElems(_.name == EmlSelectionEName))
 
-    val selections: Seq[VoteCountSelection] = candidateGroups.flatMap(_.parseSelections())
+    val selections: Seq[VoteCountSelection] = candidateGroups.flatMap(_.parseSelections)
 
     TotalVotesSection(
       selections,
@@ -169,14 +182,16 @@ object ElectionVoteCountParser {
     )
   }
 
-  private final class CandidateGroup(val affiliationElem: BackingNodes.Elem, val candidateElems: Seq[BackingNodes.Elem]) {
+  private final class CandidateGroup(val affiliationSelectionElem: BackingNodes.Elem, val candidateSelectionElems: Seq[BackingNodes.Elem]) {
+    require(affiliationSelectionElem.name == EmlSelectionEName)
+    require(candidateSelectionElems.forall(_.name == EmlSelectionEName))
 
-    def parseSelections(): Seq[VoteCountSelection] = {
-      val affiliationId = parseAffiliationId(affiliationElem.findChildElem(_.name == EmlAffiliationIdentifierEName).get)
+    def parseSelections: Seq[VoteCountSelection] = {
+      val affiliationId = parseAffiliationId(affiliationSelectionElem.findChildElem(_.name == EmlAffiliationIdentifierEName).get)
 
-      val affiliationSelection: VoteCountSelection = parseVoteCountSelection(affiliationElem, affiliationId)
+      val affiliationSelection: VoteCountSelection = parseVoteCountSelection(affiliationSelectionElem, affiliationId)
 
-      val candidateSelections: Seq[VoteCountSelection] = candidateElems.map(e => parseVoteCountSelection(e, affiliationId))
+      val candidateSelections: Seq[VoteCountSelection] = candidateSelectionElems.map(e => parseVoteCountSelection(e, affiliationId))
 
       candidateSelections.prepended(affiliationSelection)
     }

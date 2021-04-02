@@ -21,7 +21,6 @@ import java.io.File
 import scala.util.Using
 
 import com.github.tototoshi.csv.CSVWriter
-import eu.cdevreeze.nlelection.common.ENames
 import eu.cdevreeze.nlelection.data.ElectionVoteCount
 import eu.cdevreeze.nlelection.data.VoteCountSelection
 import eu.cdevreeze.nlelection.parse.ElectionVoteCountParser
@@ -38,12 +37,8 @@ object ConvertElectionVoteCount {
 
   private val saxonProcessor: Processor = new Processor(false)
 
-  def parseNestedElectionVoteCount(elem: SaxonNodes.Elem): ElectionVoteCount = {
-    parseElectionVoteCount(elem.findDescendantElemOrSelf(_.name == ENames.EmlElectionEName).get)
-  }
-
   def parseElectionVoteCount(elem: SaxonNodes.Elem): ElectionVoteCount = {
-    ElectionVoteCountParser.parseElectionVoteCount(elem)
+    ElectionVoteCountParser.parse(elem)
   }
 
   def convertElectionVoteCountToCsvWithHeader(election: ElectionVoteCount): Seq[Seq[String]] = {
@@ -96,7 +91,7 @@ object ConvertElectionVoteCount {
 
       val doc: SaxonDocument = SaxonDocument(saxonProcessor.newDocumentBuilder().build(inputFile))
 
-      val election: ElectionVoteCount = parseNestedElectionVoteCount(doc.documentElement)
+      val election: ElectionVoteCount = parseElectionVoteCount(doc.documentElement)
 
       require(election.contests.forall(_.isConsistentRegardingValidVotes), s"Inconsistencies found in totals of valid vote counts")
 

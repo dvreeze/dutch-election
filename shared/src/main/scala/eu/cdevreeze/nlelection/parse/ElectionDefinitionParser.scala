@@ -37,6 +37,10 @@ object ElectionDefinitionParser {
 
   import ENames._
 
+  /**
+   * Parses an XML element into an ElectionDefinition. The XML tree must contain an eml:ElectionEvent element, and that's where
+   * parsing starts.
+   */
   def parse(elem: BackingNodes.Elem): ElectionDefinition = {
     require(elem.findDescendantElemOrSelf(_.name == EmlElectionEventEName).nonEmpty, s"Expected $EmlElectionEventEName 'somewhere'")
     val electionEventElem: BackingNodes.Elem = elem.findDescendantElemOrSelf(_.name == EmlElectionEventEName).get
