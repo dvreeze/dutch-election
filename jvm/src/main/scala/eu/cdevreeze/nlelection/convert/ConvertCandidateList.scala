@@ -31,6 +31,8 @@ import net.sf.saxon.s9api.Processor
 /**
  * Converter of candidate lists in EML XML to CSV.
  *
+ * These input XML files have an eml:CandidateList child element of the eml:EML root element.
+ *
  * @author Chris de Vreeze
  */
 object ConvertCandidateList {

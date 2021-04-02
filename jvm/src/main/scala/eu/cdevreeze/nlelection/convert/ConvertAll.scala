@@ -34,6 +34,11 @@ import net.sf.saxon.s9api.Processor
 /**
  * Converts all EML XML files (for elections, election definitions etc.) to CSV files.
  *
+ * There are 4 kinds of EML XML files to convert: candidate list files, election definition files, vote count files and
+ * election result files. Candidate list files have an eml:CandidateList child element of the eml:EML root element.
+ * For election definitions this is an eml:ElectionEvent element. Vote count files have an eml:Count element under
+ * the root element, and election result files have an eml:Result element under the root element.
+ *
  * @author Chris de Vreeze
  */
 object ConvertAll {

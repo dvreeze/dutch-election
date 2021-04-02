@@ -31,6 +31,10 @@ import net.sf.saxon.s9api.Processor
 /**
  * Converter of election results in EML XML to CSV.
  *
+ * These input XML files have an eml:Result child element of the eml:EML root element. They contain affiliations and candidates,
+ * with elected flags and rankings (for candidates). The XML structure of these files is quite similar to those of candidate
+ * lists, yet they are easy to distinguish from each other (eml:Result versus eml:CandidateList element).
+ *
  * @author Chris de Vreeze
  */
 object ConvertElectionResult {

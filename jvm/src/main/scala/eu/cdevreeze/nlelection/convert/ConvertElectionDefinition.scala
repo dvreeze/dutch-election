@@ -31,6 +31,8 @@ import net.sf.saxon.s9api.Processor
 /**
  * Converter of election definitions in EML XML to CSV.
  *
+ * These input XML files have an eml:ElectionEvent child element of the eml:EML root element.
+ *
  * @author Chris de Vreeze
  */
 object ConvertElectionDefinition {

@@ -31,6 +31,12 @@ import net.sf.saxon.s9api.Processor
 /**
  * Converter of election vote count data in EML XML to CSV.
  *
+ * These input XML files have an eml:Count child element of the eml:EML root element.
+ *
+ * In the case of Dutch "Tweede Kamer" elections there are vote count files per municipality, per "kieskring" (a region
+ * combining several municipalities), and overall for the entire country. The latter file is only slightly different from
+ * the other ones, in that they have an extra ElectionDomain element but miss the ContestName element.
+ *
  * @author Chris de Vreeze
  */
 object ConvertElectionVoteCount {
