@@ -33,6 +33,8 @@ import net.sf.saxon.s9api.Processor
  *
  * These input XML files have an eml:ElectionEvent child element of the eml:EML root element.
  *
+ * Currently the registered parties are not output (to a second CSV file), neither by this nor by any other program.
+ *
  * @author Chris de Vreeze
  */
 object ConvertElectionDefinition {
@@ -43,7 +45,7 @@ object ConvertElectionDefinition {
     ElectionDefinitionParser.parse(elem)
   }
 
-  // TODO Other parts of election definition
+  // TODO Other parts of election definition. Now it's only the election tree that is shown.
 
   def convertElectionTreeToCsvWithHeader(electionTree: ElectionTree): Seq[Seq[String]] = {
     val header = Seq(

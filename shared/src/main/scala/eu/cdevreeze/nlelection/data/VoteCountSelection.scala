@@ -16,6 +16,8 @@
 
 package eu.cdevreeze.nlelection.data
 
+import scala.util.chaining._
+
 /**
  * Selection of valid votes of a candidate or an affiliation. It corresponds to an eml:Selection element as it occurs
  * as child element of an eml:ReportingUnitVotes element or an eml:TotalVotes element, within an eml:Count context.
@@ -30,7 +32,7 @@ sealed trait VoteCountSelection {
 
   def validVotes: Long
 
-  def sortKey: (Long, Long) = {
+  final def sortKey: (Long, Long) = {
     (affiliationId.id.toLongOption.getOrElse(0L), candidateKeyOption.flatMap(_.candidateId.toLongOption).getOrElse(0L))
   }
 }
@@ -42,6 +44,10 @@ object VoteCountSelection {
     override def affiliationId: AffiliationId = candidateKey.affiliationId
 
     override def candidateKeyOption: Option[CandidateKey] = Some(candidateKey)
+
+    def withCandidateIdIfMissing(id: String): VoteCountSelection = {
+      OfCandidate(candidateKey.copy(candidateId = candidateKey.candidateId.pipe(cid => if (cid.trim.isEmpty) id else cid)), validVotes)
+    }
   }
 
   final case class OfAffiliation(affiliationId: AffiliationId, validVotes: Long) extends VoteCountSelection {

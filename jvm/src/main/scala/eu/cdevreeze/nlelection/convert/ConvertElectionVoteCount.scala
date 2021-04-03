@@ -37,6 +37,8 @@ import net.sf.saxon.s9api.Processor
  * combining several municipalities), and overall for the entire country. The latter file is only slightly different from
  * the other ones, in that they have an extra ElectionDomain element but miss the ContestName element.
  *
+ * Currently the uncounted votes, cast votes etc. are not output (to a second CSV file), neither by this nor by any other program.
+ *
  * @author Chris de Vreeze
  */
 object ConvertElectionVoteCount {

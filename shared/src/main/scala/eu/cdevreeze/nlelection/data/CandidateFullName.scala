@@ -24,4 +24,8 @@ package eu.cdevreeze.nlelection.data
  *
  * @author Chris de Vreeze
  */
-final case class CandidateFullName(initialsOption: Option[String], firstNameOption: Option[String], lastName: String)
+final case class CandidateFullName(
+    initialsOption: Option[String],
+    firstNameOption: Option[String],
+    namePrefixOption: Option[String],
+    lastName: String)

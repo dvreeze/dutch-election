@@ -60,10 +60,10 @@ object ConvertAll {
 
     val inputXmlFiles: Seq[File] = findXmlFiles(inputDirectory, _.getName.endsWith(inputFileNameExtension))
 
-    println()
-    println(s"Found ${inputXmlFiles.size} input files")
+    println() // scalastyle:off
+    println(s"Found ${inputXmlFiles.size} input files") // scalastyle:off
 
-    println()
+    println() // scalastyle:off
 
     inputXmlFiles.foreach(f => convertFile(f, inputDirectory, outputDirectory, inputFileNameExtension))
   }
@@ -94,30 +94,27 @@ object ConvertAll {
     val saxonDoc: SaxonDocument = SaxonDocument(saxonProcessor.newDocumentBuilder().build(inputFile))
     val elementCount = saxonDoc.documentElement.findAllDescendantElemsOrSelf.size
 
+    // scalastyle:off
     println(s"Analyzing file '$inputFile' (size: ${inputFile.length}; element count: $elementCount)")
 
+    // scalastyle:off
     if (saxonDoc.documentElement.findDescendantElemOrSelf(_.name == ENames.EmlCountEName).nonEmpty) {
-      // scalastyle:off
       println(s"Converting election vote count file '$inputFile' to CSV file '$outputFile' ...")
 
       convertElectionVoteCountFile(saxonDoc, outputFile)
     } else if (saxonDoc.documentElement.findDescendantElemOrSelf(_.name == ENames.EmlElectionEventEName).nonEmpty) {
-      // scalastyle:off
       println(s"Converting election definition file '$inputFile' to CSV file '$outputFile' ...")
 
       convertElectionDefinitionFile(saxonDoc, outputFile)
     } else if (saxonDoc.documentElement.findDescendantElemOrSelf(_.name == ENames.EmlCandidateListEName).nonEmpty) {
-      // scalastyle:off
       println(s"Converting candidate list file '$inputFile' to CSV file '$outputFile' ...")
 
       convertCandidateListFile(saxonDoc, outputFile)
     } else if (saxonDoc.documentElement.findDescendantElemOrSelf(_.name == ENames.EmlResultEName).nonEmpty) {
-      // scalastyle:off
       println(s"Converting election result file '$inputFile' to CSV file '$outputFile' ...")
 
       convertElectionResultFile(saxonDoc, outputFile)
     } else {
-      // scalastyle:off
       println(s"Currently unsupported file '$inputFile'")
     }
   }

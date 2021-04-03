@@ -191,7 +191,17 @@ object ElectionVoteCountParser {
 
       val affiliationSelection: VoteCountSelection = parseVoteCountSelection(affiliationSelectionElem, affiliationId)
 
-      val candidateSelections: Seq[VoteCountSelection] = candidateSelectionElems.map(e => parseVoteCountSelection(e, affiliationId))
+      // Missing candidate IDs are filled in (this is done for the "totals" file in practice)
+      val candidateSelections: Seq[VoteCountSelection] = candidateSelectionElems
+        .map(e => parseVoteCountSelection(e, affiliationId))
+        .zipWithIndex
+        .map {
+          case (selection, idx) =>
+            selection match {
+              case sel: VoteCountSelection.OfAffiliation => sel
+              case sel: VoteCountSelection.OfCandidate   => sel.withCandidateIdIfMissing((idx + 1).toString)
+            }
+        }
 
       candidateSelections.prepended(affiliationSelection)
     }

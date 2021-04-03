@@ -103,6 +103,7 @@ object CandidateListParser {
     CandidateFullName(
       elem.findDescendantElem(e => e.name == XnlNameLineEName && e.attrOption(NameTypeEName).contains("Initials")).map(_.text),
       elem.findDescendantElem(_.name == XnlFirstNameEName).map(_.text),
+      elem.findDescendantElem(_.name == XnlNamePrefixEName).map(_.text),
       elem.findDescendantElem(_.name == XnlLastNameEName).get.text
     )
   }
