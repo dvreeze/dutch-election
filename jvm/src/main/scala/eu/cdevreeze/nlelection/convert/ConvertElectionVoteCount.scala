@@ -57,6 +57,7 @@ object ConvertElectionVoteCount {
         "ContestName",
         "KindOfVotes (Total/ReportingUnit)",
         "ReportingUnit",
+        "ReportingUnitDescription",
         "KindOfSelection (Candidate/Affiliation)",
         "AffiliationId",
         "Candidate",
@@ -68,12 +69,19 @@ object ConvertElectionVoteCount {
       electionId <- Seq(election.electionId)
       contest <- election.contests
       votes <- contest.votesSeq
-      selection <- votes.selections
+      (selection, idx) <- votes.selections.zipWithIndex
     } yield {
       val kindOfSelection: String = selection match {
         case VoteCountSelection.OfCandidate(_, _) => "Cnd"
         case _                                    => "Aff"
       }
+
+      val reportingUnitDescriptionOption: Option[String] =
+        if (idx == 0) {
+          votes.reportingUnitIdOption.map(_.description)
+        } else {
+          None
+        }
 
       Seq[String](
         electionId.key,
@@ -81,6 +89,7 @@ object ConvertElectionVoteCount {
         contest.contestId.contestNameOption.getOrElse(""),
         if (votes.reportingUnitIdOption.isEmpty) "Tot" else "Rep",
         votes.reportingUnitIdOption.map(_.id).getOrElse(""),
+        reportingUnitDescriptionOption.getOrElse(""),
         kindOfSelection,
         selection.affiliationId.id,
         selection.candidateKeyOption.map(_.candidateId).getOrElse(""),
