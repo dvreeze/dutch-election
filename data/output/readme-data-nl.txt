@@ -27,15 +27,16 @@ elke kieskring is opgedeeld in gemeenten. Neem bijvoorbeeld gemeente 183, oftewe
 zich in kieskring 4, zoals we zien in de verkiezingsdefinitie. Kieskring 4 is de kieskring Zwolle. Kieskring 4 bevindt
 zich net als de 19 andere kieskringen in de staat (Staat der Nederlanden).
 
-Voor de tellingen moeten we vooral de desbetreffende kieskring in gedachten houden als noodzakelijke context. Neem
-de kandidatenlijst voor kieskring 4, in bestand Kandidatenlijsten_TK2021_Zwolle. Daarin zien we voor kieskring 4
+Voor de tellingen moeten we vooral de kandidatenlijsten voor de desbetreffende kieskring in gedachten houden als noodzakelijke
+context. Neem de kandidatenlijst voor kieskring 4, in bestand Kandidatenlijsten_TK2021_Zwolle. Daarin zien we voor kieskring 4
 de partijen ("affiliation") en kandidaten van de partijen. De Affiliation-ID en Candidate-ID hebben we nodig om in
 tellingsbestanden de tellingen aan partijkandidaten (of partijen) te kunnen relateren.
 
 Neem nu het tellingenbestand voor de gehele kieskring Zwolle (kieskring 4), namelijk Telling_TK2021_kieskring_Zwolle.csv.
-We zien totaaltellingen per partij en per partijkandidaat, maar ook per gemeente. Bijvoorbeeld voor gemeente Tubbergen
-(reporting unit HSB4::0183). Zoals gezegd, voor partij (affiliation-ID) en partijkandidaat (affiliation-ID plus
-candidate-ID), zie de kandidatenlijst voor kieskring Zwolle.
+We zien totaaltellingen per partij en per partijkandidaat, maar ook tellingen per gemeente (per partij en per partijkandidaat).
+Bijvoorbeeld voor gemeente Tubbergen (reporting unit HSB4::0183). Zoals gezegd, voor partij (affiliation-ID) en partijkandidaat
+(affiliation-ID plus candidate-ID), zie de kandidatenlijst voor kieskring Zwolle om deze ID's te kunnen koppelen aan namen
+van partijen en kandidaten.
 
 Laten we nu inzoomen op gemeente Tubbergen, in bestand Telling_TK2021_gemeente_Tubbergen. Kandidaten en partijen zijn weer
 in de kandidatenlijst terug te vinden voor kieskring Zwolle (kieskring 4). Nu zien we totaaltellingen (voor de gemeente
