@@ -43,3 +43,4 @@ Tubbergen) en tellingen per stembureau.
 
 Het 4de en laatste (soort) bestand is het resultatenbestand Resultaat_TK2021.csv. Dit bestand bevat geen tellingen, maar
 geeft per partij en per partijkandidaat aan wat het verkiezingsresultaat is.
+
